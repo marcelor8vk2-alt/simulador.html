@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulador Fotovoltaico Inteligente ☀️</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(to bottom right, #fffbe6, #ffe082);
+    color: #333;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Cabeçalho */
+  header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(90deg, #ffb300, #ff9800);
+    padding: 20px 10px;
+    color: #222;
+    box-shadow: 0 3px 8px rgba(0,0,0,0.2);
+  }
+
+  header h1 {
+    font-size: 26px;
+    font-weight: bold;
+    margin: 0;
+    text-align: center;
+  }
+
+  header p {
+    font-size: 16px;
+    font-weight: 600;
+    margin-top: 5px;
+    color: #333;
+  }
+
+  main {
+    max-width: 850px;
+    margin: 40px auto;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    padding: 30px;
+    position: relative;
+    z-index: 2;
+  }
+
+  /* Fundo decorativo */
+  body::before {
+    content: "";
+    background-image: url('https://images.unsplash.com/photo-1509395176047-4a66953fd231?auto=format&fit=crop&w=1600&q=80');
+    background-size: cover;
+    background-position: center;
+    opacity: 0.3;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+  }
+
+  label {
+    display: block;
+    margin-top: 12px;
+    font-weight: bold;
+    color: #444;
+  }
+
+  input {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+  }
+
+  .link-botao {
+    display: inline-block;
+    margin-top: 8px;
+    background-color: #64b5f6;
+    color: #fff;
+    text-decoration: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: 0.3s;
+  }
+
+  .link-botao:hover {
+    background-color: #42a5f5;
+    transform: scale(1.03);
+  }
+
+  button {
+    margin-top: 25px;
+    width: 100%;
+    background-color: #ffb300;
+    color: #222;
+    font-size: 18px;
+    border: none;
+    border-radius: 8px;
+    padding: 12px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: 0.3s;
+  }
+
+  button:hover {
+    background-color: #ffa000;
+    transform: scale(1.02);
+  }
+
+  .resultado {
+    margin-top: 25px;
+    padding: 20px;
+    background-color: #fff8e1;
+    border-radius: 10px;
+    border-left: 6px solid #ffb300;
+  }
+
+  h2 {
+    color: #e65100;
+    margin-bottom: 10px;
+  }
+
+  canvas {
+    margin-top: 30px;
+  }
+
+  footer {
+    text-align: center;
+    padding: 15px;
+    background: #ffb300;
+    color: #222;
+    font-size: 14px;
+    margin-top: 40px;
+    box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
+  }
+
+  @media (max-width: 600px) {
+    header h1 {
+      font-size: 22px;
+    }
+    header p {
+      font-size: 14px;
+    }
+    main {
+      margin: 20px;
+      padding: 20px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Simulador Fotovoltaico Inteligente ☀️</h1>
+  <p>Instituto Federal de São Paulo – Campus Boituva</p>
+</header>
+
+<main>
+  <label>Valor médio da conta de energia (R$):</label>
+  <input type="number" id="conta" placeholder="Ex: 350" step="0.01">
+
+  <label>Tarifa média de energia (R$/kWh):</label>
+  <input type="number" id="tarifa" placeholder="Ex: 0.95" step="0.01">
+  <a href="https://clarke.com.br/mapa-de-tarifas-de-energia-no-brasil/#principal" target="_blank" class="link-botao">
+    🔗 Achar tarifa da sua região
+  </a>
+
+  <label>Irradiação solar média (kWh/m²/dia):</label>
+  <input type="number" id="irradiacao" placeholder="Ex: 5.2" step="0.1">
+  <a href="https://pvgis.com/en?utm_source=chatgpt.com" target="_blank" class="link-botao">
+    🔗 Ver irradiação solar da sua região
+  </a>
+
+  <button onclick="calcular()">Calcular Economia</button>
+
+  <div class="resultado" id="resultado"></div>
+
+  <canvas id="grafico"></canvas>
+</main>
+
+<footer>
+  Desenvolvido no IFSP – Campus Boituva © 2025
+</footer>
+
+<script>
+function calcular() {
+  const conta = parseFloat(document.getElementById("conta").value);
+  const tarifa = parseFloat(document.getElementById("tarifa").value);
+  const irradiacao = parseFloat(document.getElementById("irradiacao").value);
+
+  if (isNaN(conta) || isNaN(tarifa) || isNaN(irradiacao) || conta <= 0 || tarifa <= 0 || irradiacao <= 0) {
+    alert("Por favor, preencha todos os campos corretamente!");
+    return;
+  }
+
+  const consumoMensal = conta / tarifa;
+  const eficiencia = 0.80;
+  const potenciaIdeal = consumoMensal / (irradiacao * 30 * eficiencia);
+  const custoSistema = potenciaIdeal * 5500;
+  const geracaoMensal = potenciaIdeal * irradiacao * 30 * eficiencia;
+  const economiaMensal = Math.min(geracaoMensal * tarifa, conta);
+  const payback = custoSistema / (economiaMensal * 12);
+  const economia25anos = economiaMensal * 12 * 25;
+  const co2evitado = geracaoMensal * 0.084 * 12;
+
+  let tipoSistema = "";
+  if (potenciaIdeal < 2) tipoSistema = "Residencial Pequeno (apartamento ou casa simples)";
+  else if (potenciaIdeal < 5) tipoSistema = "Residencial Médio (casa padrão)";
+  else if (potenciaIdeal < 10) tipoSistema = "Residencial Grande ou Pequeno Comércio";
+  else tipoSistema = "Comercial / Industrial";
+
+  const div = document.getElementById("resultado");
+  div.innerHTML = `
+    <h2>Resultados</h2>
+    <p><b>Consumo mensal estimado:</b> ${consumoMensal.toFixed(2)} kWh</p>
+    <p><b>Potência ideal do sistema:</b> ${potenciaIdeal.toFixed(2)} kWp</p>
+    <p><b>Custo estimado do sistema:</b> R$ ${custoSistema.toFixed(2)}</p>
+    <p><b>Energia gerada por mês:</b> ${geracaoMensal.toFixed(2)} kWh</p>
+    <p><b>Economia mensal estimada:</b> R$ ${economiaMensal.toFixed(2)}</p>
+    <p><b>Retorno do investimento (payback):</b> ${payback.toFixed(2)} anos</p>
+    <p><b>Economia total em 25 anos:</b> R$ ${economia25anos.toFixed(2)}</p>
+    <p><b>CO₂ evitado por ano:</b> ${co2evitado.toFixed(2)} kg</p>
+    <p><b>Tipo de sistema recomendado:</b> ${tipoSistema}</p>
+  `;
+
+  const ctx = document.getElementById("grafico").getContext("2d");
+  if (window.graficoExistente) window.graficoExistente.destroy();
+  window.graficoExistente = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: ["Consumo (kWh)", "Geração (kWh)", "Economia Mensal (R$)", "Custo do Sistema (R$)"],
+      datasets: [{
+        label: "Resumo do Sistema",
+        data: [consumoMensal, geracaoMensal, economiaMensal, custoSistema],
+        backgroundColor: ["#ffb300", "#ff7043", "#81c784", "#64b5f6"]
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        y: { beginAtZero: true }
+      }
+    }
+  });
+}
+</script>
+
+</body>
+</html>
+
+
