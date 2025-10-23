@@ -1,5 +1,5 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
+<!DOCTYPE html> 
+<html lang="pt-BR">   gif add index.html
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -258,6 +258,7 @@ function calcular() {
 
 </body>
 </html>
+
 
 
 
